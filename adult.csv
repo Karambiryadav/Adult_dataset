@@ -1,0 +1,86 @@
+
+1.Data set:-
+
+
+```{r }
+data=read.csv("adult.csv")
+
+```
+
+
+split data into train and test:-
+
+
+```{r }
+sample=sample.int(n=nrow(data),size = floor(.7*nrow(data)),replace = F)
+set.seed(85)
+bb_train=data[sample,]
+bb_test=data[-sample,]
+```
+
+
+Data Imputation:-
+
+
+
+```{r }
+data$workclass[which(data$workclass=='?')]='Private'
+data$occupation[which(data$occupation=='?')]='Prof-specialty'
+data$native.country[which(data$native.country=='?')]='United-States'
+
+```
+
+
+Decision Tree Algorithm:-
+
+
+```{r}
+library(tree)
+model1=tree(income~workclass+fnlwgt+capital.gain+sex+age+education+occupation+hours.per.week,data=bb_train)
+pred=predict(model1,bb_test)
+maxidx=function(arr){
+  return(which(arr==max(arr)))
+}
+idx=apply(pred,c(1),maxidx)
+modelprediction<-c('No','Yes')[idx]
+confmat=table(modelprediction,bb_test$income)
+accuracy <- (sum(diag(confmat))/sum(confmat))*100
+accuracy
+
+```
+
+
+Naive bayes Algorithm:-
+
+
+
+```{r }
+library(e1071)
+set.seed(85)
+model_naive=naiveBayes(income~.,data=data)
+pred=predict(model_naive,bb_test[,-15])
+confmat=table(pred,bb_test$income)
+accuracy <- (sum(diag(confmat))/sum(confmat))*100
+accuracy
+```
+
+
+kNN Algorith :-
+
+
+```{r }
+library(class)
+knn_train_data=data[sample,c(1,3,5,11,13,12)]
+knn_test_data=data[-sample,c(1,3,5,11,13,12)]
+knn_train_label=data[sample,15]
+knn_test_label=data[-sample,15]
+k=15
+
+pc_pred_label=knn(train = knn_train_data,test=knn_test_data,cl=knn_train_label, k)
+                  
+confmat=table(knn_test_label,pc_pred_label)
+
+accuracy=sum(diag(confmat))/sum(confmat)*100
+accuracy
+
+```
